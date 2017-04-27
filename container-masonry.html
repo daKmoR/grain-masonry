@@ -1,0 +1,99 @@
+<link rel="import" href="../../../Polymer/Polymer/DomModules/BaseElement.html">
+<link rel="import" href="../../../Polymer/Polymer/DomModules/ResponsiveBehavior.html">
+<link rel="import" href="MasonryImport.html">
+
+<style>
+	.container-masonry-animate-move-up {
+		transform: translateY(200px);
+		opacity: 0;
+		animation: containerMasonryMoveToOrigin 0.65s ease forwards;
+	}
+
+	.container-masonry-animate-move-down {
+		transform: translateY(-200px);
+		opacity: 0;
+		animation: containerMasonryMoveToOrigin 0.65s ease forwards;
+	}
+
+	@keyframes containerMasonryMoveToOrigin {
+		0% { }
+		100% { transform: translateY(0); opacity: 1; }
+	}
+</style>
+
+<dom-module id="container-masonry">
+	<template>
+		<style>
+			:host {
+				display: block;
+				width: 100%;
+			}
+		</style>
+
+		<slot></slot>
+	</template>
+
+	<script>
+
+		class ContainerMasonry extends ResponsiveBehavior(BaseElement) {
+
+			static get is() { return 'container-masonry' }
+
+			constructor() {
+				super();
+			}
+
+			ready() {
+				super.ready();
+
+				this.raw = new Masonry(this, {
+					itemSelector: 'article',
+					transitionDuration: 0,
+					initLayout: false
+				});
+
+				this.addEventListener('load', function(event){
+					var target = event.target;
+					if (target.tagName == 'IMG') {
+						this.layout();
+					}
+				}.bind(this), true);
+
+				Polymer.RenderStatus.afterNextRender(this, function() {
+					this.layout();
+				});
+			}
+
+			layout() {
+				this.raw.layout();
+			}
+
+			appendChild(element) {
+				element.classList.add('container-masonry-animate-move-up');
+				element.addEventListener('animationend', function (event) {
+					event.target.classList.remove('container-masonry-animate-move-up');
+				});
+				super.appendChild(element);
+				this.raw.addItems(element);
+				Polymer.RenderStatus.afterNextRender(this, function() {
+					this.layout();
+				});
+			}
+
+			insertBefore(element, before) {
+				element.classList.add('container-masonry-animate-move-down');
+				element.addEventListener('animationend', function (event) {
+					event.target.classList.remove('container-masonry-animate-move-down');
+				});
+				super.insertBefore(element, before);
+				this.raw.prepended(element);
+				Polymer.RenderStatus.afterNextRender(this, function() {
+					this.layout();
+				});
+			}
+
+		}
+
+		customElements.define(ContainerMasonry.is, ContainerMasonry);
+	</script>
+</dom-module>
