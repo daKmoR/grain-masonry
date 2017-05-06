@@ -1,15 +1,17 @@
-<link rel="import" href="../../../Polymer/Polymer/DomModules/BaseElement.html">
-<link rel="import" href="../../../Polymer/Polymer/DomModules/ResponsiveBehavior.html">
-<link rel="import" href="MasonryImport.html">
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/utils/render-status.html">
+<link rel="import" href="../grain-update-inline-style-behavior/grain-update-inline-style-behavior.html">
+<link rel="import" href="../grain-responsive-behavior/grain-responsive-behavior.html">
+<link rel="import" href="grain-masonry-import.html">
 
 <style>
-	.container-masonry-animate-move-up {
+	.grain-masonry-animate-move-up {
 		transform: translateY(200px);
 		opacity: 0;
 		animation: containerMasonryMoveToOrigin 0.65s ease forwards;
 	}
 
-	.container-masonry-animate-move-down {
+	.grain-masonry-animate-move-down {
 		transform: translateY(-200px);
 		opacity: 0;
 		animation: containerMasonryMoveToOrigin 0.65s ease forwards;
@@ -21,7 +23,7 @@
 	}
 </style>
 
-<dom-module id="container-masonry">
+<dom-module id="grain-masonry">
 	<template>
 		<style>
 			:host {
@@ -35,26 +37,37 @@
 
 	<script>
 
-		class ContainerMasonry extends ResponsiveBehavior(BaseElement) {
+		class GrainMasonry extends GrainUpdateInlineStyleBehavior(GrainResponsiveBehavior(Polymer.Element)) {
 
-			static get is() { return 'container-masonry' }
+			static get is() { return 'grain-masonry' }
 
-			constructor() {
-				super();
+			static get properties() {
+				return {
+					itemSelector: {
+						type: String,
+						reflectToAttribute: true,
+						value: 'article'
+					},
+					transitionDuration: {
+						type: Number,
+						reflectToAttribute: true,
+						value: 0
+					}
+				};
 			}
 
 			ready() {
 				super.ready();
 
 				this.raw = new Masonry(this, {
-					itemSelector: 'article',
-					transitionDuration: 0,
+					itemSelector: this.itemSelector,
+					transitionDuration: this.transitionDuration,
 					initLayout: false
 				});
 
 				this.addEventListener('load', function(event){
-					var target = event.target;
-					if (target.tagName == 'IMG') {
+					let target = event.target;
+					if (target.tagName === 'IMG') {
 						this.layout();
 					}
 				}.bind(this), true);
@@ -69,9 +82,9 @@
 			}
 
 			appendChild(element) {
-				element.classList.add('container-masonry-animate-move-up');
+				element.classList.add('grain-masonry-animate-move-up');
 				element.addEventListener('animationend', function (event) {
-					event.target.classList.remove('container-masonry-animate-move-up');
+					event.target.classList.remove('grain-masonry-animate-move-up');
 				});
 				super.appendChild(element);
 				this.raw.addItems(element);
@@ -81,9 +94,9 @@
 			}
 
 			insertBefore(element, before) {
-				element.classList.add('container-masonry-animate-move-down');
+				element.classList.add('grain-masonry-animate-move-down');
 				element.addEventListener('animationend', function (event) {
-					event.target.classList.remove('container-masonry-animate-move-down');
+					event.target.classList.remove('grain-masonry-animate-move-down');
 				});
 				super.insertBefore(element, before);
 				this.raw.prepended(element);
@@ -94,6 +107,6 @@
 
 		}
 
-		customElements.define(ContainerMasonry.is, ContainerMasonry);
+		customElements.define(GrainMasonry.is, GrainMasonry);
 	</script>
 </dom-module>
