@@ -37,9 +37,9 @@
 		}
 		function addAbove() {
 			let newArticle = document.createElement('article');
-			let masonry = document.getElementById('masonry')
+			let masonry = document.getElementById('masonry');
 			newArticle.innerHTML = 'added above';
-			masonry.insertBefore(newArticle, masonry.children[0]);
+			document.getElementById('masonry').prependChild(newArticle);
 		}
 	</script>
 

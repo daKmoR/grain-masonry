@@ -32,7 +32,7 @@
 			}
 		</style>
 
-		<slot></slot>
+		<slot id="slot"></slot>
 	</template>
 
 	<script>
@@ -56,32 +56,64 @@
 				};
 			}
 
-			ready() {
-				super.ready();
-
+			init() {
 				this.raw = new Masonry(this, {
 					itemSelector: this.itemSelector,
 					transitionDuration: this.transitionDuration,
 					initLayout: false
 				});
+				Polymer.RenderStatus.afterNextRender(this, function() {
+					this.layout();
+				});
+			}
 
-				this.addEventListener('load', function(event){
+			connectedCallback() {
+				super.connectedCallback();
+				this.init();
+
+				this._loadObserver = function(event) {
 					let target = event.target;
 					if (target.tagName === 'IMG') {
 						this.layout();
 					}
-				}.bind(this), true);
+				}.bind(this);
+				this.addEventListener('load', this._loadObserver, true);
 
-				Polymer.RenderStatus.afterNextRender(this, function() {
-					this.layout();
+				this.toggleSlotObsever = false;
+
+				this._slotObserver = new Polymer.FlattenedNodesObserver(this.$.slot, (info) => {
+					if (this.toggleSlotObsever) {
+						let addedElements = info.addedNodes.filter((node) => {
+							return (node.nodeType === Node.ELEMENT_NODE && node.nodeName === this.itemSelector.toUpperCase())
+						});
+						let removedElements = info.removedNodes.filter((node) => {
+							return (node.nodeType === Node.ELEMENT_NODE && node.nodeName === this.itemSelector.toUpperCase())
+						});
+
+						if (addedElements.length > 0 || removedElements.length > 0) {
+							this.reInit();
+						}
+					}
+					this.toggleSlotObsever = true;
 				});
+			}
+
+			disconnectedCallback() {
+				this._slotObserver.disconnect();
+				this.removeEventListener('load', this._loadObserver);
 			}
 
 			layout() {
 				this.raw.layout();
 			}
 
+			reInit() {
+				this.raw.destroy();
+				this.init();
+			}
+
 			appendChild(element) {
+				this.toggleSlotObsever = false;
 				element.classList.add('grain-masonry-animate-move-up');
 				element.addEventListener('animationend', function (event) {
 					event.target.classList.remove('grain-masonry-animate-move-up');
@@ -90,10 +122,28 @@
 				this.raw.addItems(element);
 				Polymer.RenderStatus.afterNextRender(this, function() {
 					this.layout();
+					this.toggleSlotObsever = true;
 				});
 			}
 
+			appendChildren(elements) {
+				for (let element of elements) {
+					this.appendChild(element);
+				}
+			}
+
+			prependChild(element) {
+				this.insertBefore(element, this.children[0]);
+			}
+
+			prependChildren(elements) {
+				for (let element of elements) {
+					this.prependChild(element);
+				}
+			}
+
 			insertBefore(element, before) {
+				this.toggleSlotObsever = false;
 				element.classList.add('grain-masonry-animate-move-down');
 				element.addEventListener('animationend', function (event) {
 					event.target.classList.remove('grain-masonry-animate-move-down');
@@ -102,6 +152,7 @@
 				this.raw.prepended(element);
 				Polymer.RenderStatus.afterNextRender(this, function() {
 					this.layout();
+					this.toggleSlotObsever = true;
 				});
 			}
 
