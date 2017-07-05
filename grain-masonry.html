@@ -143,6 +143,9 @@
 			}
 
 			insertBefore(element, before) {
+				if (element.nodeName === '#document-fragment') {
+					element = element.querySelector(this.itemSelector);
+				}
 				this.toggleSlotObsever = false;
 				element.classList.add('grain-masonry-animate-move-down');
 				element.addEventListener('animationend', function (event) {
