@@ -1,0 +1,161 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/utils/render-status.html">
+<link rel="import" href="grain-masonry-import.html">
+
+<style>
+	@keyframes containerMasonryMoveToOrigin {
+		0% { }
+		100% { transform: translateY(0); opacity: 1; }
+	}
+</style>
+
+<script>
+	class GrainMasonry extends Polymer.Element {
+
+		static get is() { return 'grain-masonry' }
+
+		static get properties() {
+			return {
+				itemSelector: {
+					type: String,
+					reflectToAttribute: true,
+					value: 'article'
+				},
+				transitionDuration: {
+					type: Number,
+					reflectToAttribute: true,
+					value: 0
+				}
+			};
+		}
+
+		static get template() {
+			return `
+				<style>
+					:host {
+						display: block;
+						width: 100%;
+					}
+
+					:host ::slotted(.grain-masonry-animate-move-up) {
+						transform: translateY(200px);
+						opacity: 0;
+						animation: containerMasonryMoveToOrigin 0.65s ease forwards;
+					}
+
+					:host ::slotted(.grain-masonry-animate-move-down) {
+						transform: translateY(-200px);
+						opacity: 0;
+						animation: containerMasonryMoveToOrigin 0.65s ease forwards;
+					}
+				</style>
+
+				<slot id="slot"></slot>
+			`;
+		}
+
+		init() {
+			this.raw = new Masonry(this, {
+				itemSelector: this.itemSelector,
+				transitionDuration: this.transitionDuration,
+				initLayout: false
+			});
+			Polymer.RenderStatus.afterNextRender(this, function() {
+				this.layout();
+			});
+		}
+
+		connectedCallback() {
+			super.connectedCallback();
+			this.init();
+
+			this._loadObserver = function(event) {
+				let target = event.target;
+				if (target.tagName === 'IMG') {
+					this.layout();
+				}
+			}.bind(this);
+			this.addEventListener('load', this._loadObserver, true);
+
+			this.toggleSlotObsever = false;
+
+			this._slotObserver = new Polymer.FlattenedNodesObserver(this.$.slot, (info) => {
+				if (this.toggleSlotObsever) {
+					let addedElements = info.addedNodes.filter((node) => {
+						return (node.nodeType === Node.ELEMENT_NODE && node.nodeName === this.itemSelector.toUpperCase())
+					});
+					let removedElements = info.removedNodes.filter((node) => {
+						return (node.nodeType === Node.ELEMENT_NODE && node.nodeName === this.itemSelector.toUpperCase())
+					});
+
+					if (addedElements.length > 0 || removedElements.length > 0) {
+						this.reInit();
+					}
+				}
+				this.toggleSlotObsever = true;
+			});
+		}
+
+		disconnectedCallback() {
+			this._slotObserver.disconnect();
+			this.removeEventListener('load', this._loadObserver);
+		}
+
+		layout() {
+			this.raw.layout();
+		}
+
+		reInit() {
+			this.raw.destroy();
+			this.init();
+		}
+
+		appendChild(element) {
+			this.toggleSlotObsever = false;
+			element.classList.add('grain-masonry-animate-move-up');
+			element.addEventListener('animationend', function (event) {
+				event.target.classList.remove('grain-masonry-animate-move-up');
+			});
+			super.appendChild(element);
+			this.raw.addItems(element);
+			Polymer.RenderStatus.afterNextRender(this, function() {
+				this.layout();
+				this.toggleSlotObsever = true;
+			});
+		}
+
+		appendChildren(elements) {
+			for (let element of elements) {
+				this.appendChild(element);
+			}
+		}
+
+		prependChild(element) {
+			this.insertBefore(element, this.children[0]);
+		}
+
+		prependChildren(elements) {
+			for (let element of elements) {
+				this.prependChild(element);
+			}
+		}
+
+		insertBefore(element, before) {
+			if (element.nodeName === '#document-fragment') {
+				element = element.querySelector(this.itemSelector);
+			}
+			this.toggleSlotObsever = false;
+			element.classList.add('grain-masonry-animate-move-down');
+			element.addEventListener('animationend', function (event) {
+				event.target.classList.remove('grain-masonry-animate-move-down');
+			});
+			super.insertBefore(element, before);
+			this.raw.prepended(element);
+			Polymer.RenderStatus.afterNextRender(this, function() {
+				this.layout();
+				this.toggleSlotObsever = true;
+			});
+		}
+
+	}
+</script>

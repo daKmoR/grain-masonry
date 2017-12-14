@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+	<title>grain-responsive-container demo</title>
+
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+	<link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+	<link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+	<link rel="import" href="../grain-masonry.html">
+
+	<style>
+		.grid {
+			background: #EEE;
+			max-width: 1200px;
+		}
+
+		/* clearfix */
+		.grid:after {
+			content: '';
+			display: block;
+			clear: both;
+		}
+
+		/* ---- grid-item ---- */
+
+		.grid-item {
+			width: 160px;
+			height: 120px;
+			float: left;
+			background: #D26;
+			border: 2px solid #333;
+			border-color: hsla(0, 0%, 0%, 0.5);
+			border-radius: 5px;
+		}
+
+		.grid-item--width2 { width: 320px; }
+		.grid-item--width3 { width: 480px; }
+		.grid-item--width4 { width: 640px; }
+
+		.grid-item--height2 { height: 200px; }
+		.grid-item--height3 { height: 260px; }
+		.grid-item--height4 { height: 360px; }
+
+		button {
+			font-size: 20px;
+		}
+
+	</style>
+
+	<script>
+		// create <div class="grid-item"></div>
+		function getItemElement() {
+			var elem = document.createElement('div');
+			var wRand = Math.random();
+			var hRand = Math.random();
+			var widthClass = wRand > 0.8 ? 'grid-item--width3' : wRand > 0.6 ? 'grid-item--width2' : '';
+			var heightClass = hRand > 0.85 ? 'grid-item--height4' : hRand > 0.6 ? 'grid-item--height3' : hRand > 0.35 ? 'grid-item--height2' : '';
+			elem.className = 'grid-item ' + widthClass + ' ' + heightClass;
+			return elem;
+		}
+	</script>
+
+</head>
+<body>
+<div class="vertical-section-container centered">
+	<h3>Basic grain-masonry demo</h3>
+	<demo-snippet>
+		<template>
+			<button onclick="addAbove();">add above</button>
+			<grain-masonry id="masonry1" class="grid" item-selector="div">
+				<div class="grid-item grid-item--width3"></div>
+				<div class="grid-item grid-item--height3"></div>
+				<div class="grid-item"></div>
+				<div class="grid-item grid-item--height2"></div>
+			</grain-masonry>
+			<button onclick="addBelow();">add below</button>
+		</template>
+	</demo-snippet>
+
+	<script>
+		let masonry = document.getElementById('masonry1');
+		function addBelow() {
+			let newArticle = document.createElement('div');
+			newArticle.innerHTML = 'added below';
+			masonry.appendChild(getItemElement());
+		}
+		function addAbove() {
+			let newArticle = document.createElement('div');
+			newArticle.innerHTML = 'added above';
+			masonry.prependChild(getItemElement());
+		}
+	</script>
+</div>
+</body>
+</html>

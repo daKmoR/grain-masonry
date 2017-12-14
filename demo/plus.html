@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+	<title>grain-responsive-container demo</title>
+
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+	<link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+	<link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+	<link rel="import" href="../grain-masonry-plus.html">
+
+	<style>
+		article {
+			background: #36abcc;
+			width: 29%;
+			height: 200px;
+			margin: 2%;
+			color: #fff;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		grain-masonry {
+			background: #ccc;
+		}
+	</style>
+
+	<script>
+		function addBelow() {
+			let newArticle = document.createElement('article');
+			newArticle.innerHTML = 'added below';
+			document.getElementById('masonry').appendChild(newArticle);
+		}
+		function addAbove() {
+			let newArticle = document.createElement('article');
+			let masonry = document.getElementById('masonry');
+			newArticle.innerHTML = 'added above';
+			document.getElementById('masonry').prependChild(newArticle);
+		}
+	</script>
+
+</head>
+<body>
+<div class="vertical-section-container centered">
+	<h3>Basic grain-masonry demo</h3>
+	<button onclick="addBelow();">add below</button>
+	<button onclick="addAbove();">add above</button>
+	<demo-snippet>
+		<template>
+<grain-masonry-plus id="masonry">
+	<article>
+		Power
+	</article>
+	<article style="height: 100px;">
+		To
+	</article>
+	<article style="height: 190px;">
+		The
+	</article>
+	<article style="height: 310px;">
+		People
+	</article>
+	<article>
+		Power
+	</article>
+	<article style="height: 140px;">
+		To
+	</article>
+	<article style="height: 210px;">
+		The
+	</article>
+	<article style="height: 230px;">
+		People
+	</article>
+</grain-masonry-plus>
+		</template>
+	</demo-snippet>
+</div>
+</body>
+</html>
